@@ -291,6 +291,19 @@ class DashboardView(View):
                     .exclude(state="DEL")
                     .aggregate(Sum('total'))
                     )
+        
+        # get all rooms
+        total_rooms = Room.objects.count()
+
+        occupied_rooms = Booking.objects.filter(
+            state="NEW",
+            checkin__lte=target_date,
+            checkout__gt=target_date
+        ).count()
+
+        occupancy_rate = 0
+        if total_rooms > 0:
+            occupancy_rate = (occupied_rooms / total_rooms) * 100
 
         # preparing context data
         dashboard = {
@@ -298,7 +311,8 @@ class DashboardView(View):
             'incoming_guests': incoming,
             'outcoming_guests': outcoming,
             'invoiced': invoiced,
-            'current_date': target_date # Get date
+            'current_date': target_date, # Get date
+            'occupancy_rate': round(occupancy_rate, 2)
         }
 
         context = {
