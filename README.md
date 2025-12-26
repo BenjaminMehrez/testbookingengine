@@ -86,7 +86,7 @@ All changes were implemented using a **Feature Branch Workflow**, ensuring code 
 ### 2. Occupancy Rate Widget
 * **Functionality:** Introduced a KPI widget in the Dashboard displaying the real-time Occupancy Rate.
 * **Logic:** Calculated as `(Confirmed Bookings / Total Rooms) * 100`.
-* **Reliability:** The calculation explicitly excludes cancelled bookings (`state='CAN'`) to ensure data accuracy.
+* **Reliability:** The calculation explicitly excludes cancelled bookings (`state='DEL'`) to ensure data accuracy.
 
 ### 3. Edit Booking Dates
 * **Functionality:** Enabled modification of dates for active reservations.
@@ -109,8 +109,8 @@ Beyond the requested tasks, several improvements were made to ensure the applica
 * **Legacy Data Cleanup:** When editing an existing booking, the system now enforces contact info validation. Users cannot save date changes if their stored phone number is invalid; they are prompted to correct it.
 
 ### ⚙️ DevOps & Configuration
-* **Python 3.10 Support:** Fixed a version constraint bug that prevented the app from running on newer environments requiring Python 3.10+.
-* **Docker Optimization:** Removed obsolete `version` attribute from `docker-compose.yml` to adhere to the latest Docker Compose specification.
+* **Modern Stack Compatibility:** Verified and validated application stability on **Python 3.10+** (tested via `python:latest` Docker image), ensuring the legacy codebase is compatible with modern runtime environments.
+* **Docker Integration:** Validated the containerized environment to ensure seamless setup and execution of the test suite across different machines.
 * **Environment Variables:** Prepared the project to read sensitive configurations via environment variables (where applicable).
 
 ### 🔔 UX/UI Improvements
