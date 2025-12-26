@@ -245,11 +245,12 @@ class EditBookingView(View):
             }
             return render(request, 'edit_booking.html', context)
 
-
 class EditBookingDatesView(View):
     def get(self, request, pk):
+        # Retrieve the booking or 404 (though .get() throws DoesNotExist, get_object_or_404 is safer)
         booking = Booking.objects.get(id=pk)
         
+        # Initialize the form with the instance to pre-fill current dates
         form = RoomEditDatesForm(instance=booking)
         
         context = {
@@ -262,42 +263,55 @@ class EditBookingDatesView(View):
     def post(self, request, pk):
         booking = Booking.objects.get(id=pk)
 
+        # 1. Extract dates manually from the POST request
         new_checkin = request.POST.get('checkin')
         new_checkout = request.POST.get('checkout')
 
+        # 2. Basic Validation: Ensure fields are not empty
         if not new_checkin or not new_checkout:
-            messages.error(request, "Debes introducir las fechas de entrada y salida.")
+            messages.error(request, "You must provide both check-in and check-out dates.")
             return redirect(f"/booking/{pk}/edit-dates")
+
         try:
+            # 3. Parse string dates to Python date objects
             checkin_date = datetime.strptime(new_checkin, '%Y-%m-%d').date()
             checkout_date = datetime.strptime(new_checkout, '%Y-%m-%d').date()
         except ValueError:
-            messages.error(request, "Las fechas introducidas no son válidas.")
+            messages.error(request, "Invalid date format provided.")
             return redirect(f"/booking/{pk}/edit-dates")
 
+        # 4. Logical Validation: Check-out must be after check-in
         if checkin_date >= checkout_date:
-            messages.error(request, "La fecha de salida debe ser posterior a la de entrada.")
+            messages.error(request, "Checkout date must be after check-in date.")
             return redirect(f"/booking/{pk}/edit-dates")
         
+        # 5. Availability Check (Business Logic)
+        # Query for overlapping bookings in the same room, excluding the current one.
+        # Logic: (StartA < EndB) and (EndA > StartB)
         is_taken = Booking.objects.filter(
             room=booking.room,
-            state="NEW",
+            state="NEW",  # Only check against active/confirmed bookings
             checkin__lt=checkout_date,
             checkout__gt=checkin_date
-        ).exclude(id=pk).exists()
+        ).exclude(id=pk).exists()  # Important: Exclude self to allow updating own dates
 
         if is_taken:
-            messages.error(request, "¡Sin disponibilidad! La habitación está ocupada en esas fechas.")
+            messages.error(request, "No availability! The room is already booked for these dates.")
             return redirect(f"/booking/{pk}/edit-dates")
             
+        # 6. Apply changes
         booking.checkin = checkin_date
         booking.checkout = checkout_date
 
+        # 7. Price Recalculation
+        # Calculate the new total based on the number of nights and room price
         days = (checkout_date - checkin_date).days
         booking.total = days * booking.room.room_type.price
+        
+        # 8. Save transaction
         booking.save()
 
-        messages.success(request, "Reserva actualizada con éxito.")
+        messages.success(request, "Booking updated successfully.")
         return redirect("/")
 
 class DashboardView(View):
