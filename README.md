@@ -133,9 +133,24 @@ The project is fully containerized.
 
 ## ✅ Testing Strategy
 
-A comprehensive test suite was written using `django.test.TestCase` to cover happy paths, edge cases, and business logic.
+A comprehensive test suite was written using `django.test.TestCase` covering unit and integration scenarios.
 
-**Run All Tests:**
-```bash
-docker compose exec testservice python manage.py test pms
+To ensure proper test discovery in the containerized environment, **please run the test suites using the specific commands below**:
 
+### Option A: Run All Tests (Recommended)
+Executes the full suite across all features:
+
+1.  **Room Filter (Task 1):**
+    ```bash
+    docker compose exec testservice python manage.py test pms.tests.test_room_filter
+    ```
+
+2.  **Occupancy Rate (Task 2):**
+    ```bash
+    docker compose exec testservice python manage.py test pms.tests.test_dashboard
+    ```
+
+3.  **Edit Booking Dates (Task 3):**
+    ```bash
+    docker compose exec testservice python manage.py test pms.tests.test_edit_booking_dates
+    ```
