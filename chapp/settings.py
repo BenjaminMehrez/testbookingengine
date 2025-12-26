@@ -31,7 +31,7 @@ MESSAGE_TAGS = {
     messages.INFO: 'info',
     messages.SUCCESS: 'success',
     messages.WARNING: 'warning',
-    messages.ERROR: 'danger', # <--- AQUÍ ESTÁ EL TRUCO
+    messages.ERROR: 'danger',
 }
 
 ALLOWED_HOSTS = ['chapp-inn.herokuapp.com', '127.0.0.1', 'localhost']
