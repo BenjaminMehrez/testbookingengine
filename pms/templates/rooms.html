@@ -1,7 +1,26 @@
 {% extends "main.html"%}
 
 {% block content %}
-<h1 class="py-5">Habitaciones del hotel</h1>
+<div class="row my-5 align-items-center">
+    <div class="col-md-6">
+        <h1>Habitaciones</h1>
+    </div>
+    <div class="col-md-6">
+        <form method="get" class="d-flex">
+            <input 
+                type="text" 
+                name="search" 
+                class="form-control me-2" 
+                placeholder="Filtrar por nombre (ej: Room 1.1)" 
+                value="{{ search_query }}"
+            >
+            <button class="btn btn-primary" type="submit">Filtrar</button>
+            {% if search_query %}
+                <a href="{% url 'rooms' %}" class="btn btn-outline-secondary ms-2">Limpiar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
 {% for room in rooms%}
 <div class="row card mt-3 mb-3 hover-card bg-tr-250">
     <div class="col p-3">
@@ -11,9 +30,13 @@
         <div>
             <a href="{% url 'room_details' pk=room.id%}">Ver detalles</a>
         </div>
-        
     </div>
-    
+</div>
+{% empty %}
+<div class="col-12">
+    <div class="alert alert-warning text-center">
+        No encontramos ninguna habitación llamada "<strong>{{ search_query }}</strong>".
+    </div>
 </div>
 {% endfor %}
 {% endblock content%}

@@ -35,12 +35,20 @@ class BookingSearchView(View):
 class RoomSearchView(View):
     # renders the search form
     def get(self, request):
-        room_search_form = RoomSearchForm()
-        context = {
-            'form': room_search_form
-        }
+        search_query = request.GET.get('search', '')
 
-        return render(request, "booking_search_form.html", context)
+        rooms_queryset = Room.objects.all()
+        
+        if search_query:
+            rooms_queryset = rooms_queryset.filter(name__icontains=search_query)
+        
+        rooms = rooms_queryset.values("name", "room_type__name", "id")
+
+        context = {
+            'rooms': rooms,
+            'search_query': search_query
+        }
+        return render(request, "rooms.html", context)
 
     # renders the search results of available rooms by date and guests
     def post(self, request):
