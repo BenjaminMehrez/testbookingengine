@@ -1,17 +1,17 @@
 {% extends "main.html"%}
 
 {% block content %}
-<h1>Nueva reserva</h1>
+<h1 class="py-5">Nueva reserva</h1>
 <form action="{% url 'search'%}" method="POST">
     {% csrf_token%}
     {% for field in form %}
-    <div class="row">
+    <div class="row py-2">
         <div class="col-md-2">{{field.label_tag}}</div>
         <div class="col-md">{{field}}</div>
     </div>
     {% endfor %}
     <div class="row">
-        <div class="col"><span>Días: </span><span id="total-days"></span></div>
+         <div class="col mb-3"><span>Días: </span><span id="total-days"></span></div>
     </div>
     <div class="row">
         <div class="col-md-auto">

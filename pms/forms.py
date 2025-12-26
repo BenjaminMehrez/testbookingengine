@@ -2,8 +2,8 @@ from datetime import datetime
 from django import forms
 from django.forms import ModelForm
 
-from .models import Booking, Customer
 
+from .models import Booking, Customer
 
 class RoomSearchForm(ModelForm):
     class Meta:
@@ -13,11 +13,15 @@ class RoomSearchForm(ModelForm):
             "guests": "Huéspedes"
         }
         widgets = {
-            'checkin': forms.DateInput(attrs={'type': 'date', 'min': datetime.today().strftime('%Y-%m-%d')}),
-            'checkout': forms.DateInput(
-                attrs={'type': 'date', 'max': datetime.today().replace(month=12, day=31).strftime('%Y-%m-%d')}),
-            'guests': forms.DateInput(attrs={'type': 'number', 'min': 1, 'max': 4}),
+            'checkin': forms.DateInput(attrs={'type': 'date', 'class': 'form-control w-25'}),
+            'checkout': forms.DateInput(attrs={'type': 'date', 'class': 'form-control w-25'}),
+            'guests': forms.NumberInput(attrs={'type': 'number', 'min': 1, 'max': 4, 'class': 'form-control w-25'})
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default values for checkin and checkout
+        self.fields['checkin'].widget.attrs['min'] = datetime.today().strftime('%Y-%m-%d')
 
 
 class CustomerForm(ModelForm):
@@ -28,14 +32,20 @@ class CustomerForm(ModelForm):
             "name": "Nombre y apellido",
             "phone": "Teléfono"
         }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
 
 class BookingForm(ModelForm):
     class Meta:
         model = Booking
         fields = "__all__"
-        labels = {
-        }
         widgets = {
             'checkin': forms.HiddenInput(),
             'checkout': forms.HiddenInput(),
@@ -47,8 +57,6 @@ class BookingFormExcluded(ModelForm):
     class Meta:
         model = Booking
         exclude = ["customer", "room", "code"]
-        labels = {
-        }
         widgets = {
             'checkin': forms.HiddenInput(),
             'checkout': forms.HiddenInput(),

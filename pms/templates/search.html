@@ -1,7 +1,7 @@
 {% extends "main.html"%}
 
 {% block content %}
-<h1>Búsqueda</h1>
+<h1 class="pt-5 pb-3">Búsqueda</h1>
 <div class="card card-body row">
     <div class="row">
         <div class="col">
@@ -27,9 +27,9 @@
             <span>{{ query.checkout }}</span>
         </div>
     </div>
-    <a href="{% url 'home' %}">Nueva búsqueda</a>
+    <a href="{% url 'search' %}">Nueva búsqueda</a>
 </div>
-<h1>Habitaciones disponibles</h1>
+<h1 class="py-4">Habitaciones disponibles</h1>
 
 <div id="rooms-accordion" class="">
     {% for room in total_rooms %}
@@ -37,14 +37,14 @@
     <div class="card mb-3">
         <div id="room-type-{{room.room_type}}-container" class="card-header">
             <div class="col h5"><span>Habitación: </span><span>{{room.room_type__name}}</span></div>
-            <div class="col"><span>Disponibles: </span><span>{{room.total}}</span></div>
-            <a class="btn btn-link" data-bs-toggle="collapse" href="#collapse-room-{{room.room_type}}">Seleccionar habitaciones disponibles</a>
+            <div class="col pb-2"><span>Disponibles: </span><span>{{room.total}}</span></div>
+            <a class="btn-link btn border" data-bs-toggle="collapse" href="#collapse-room-{{room.room_type}}">Seleccionar habitaciones disponibles</a>
         </div>
         <div id="collapse-room-{{room.room_type}}" class="card-body collapse" data-bs-parent="#rooms-accordion">
             <div class="card-body">
                 {% for detail in rooms%}
                     {% if room.room_type == detail.room_type.id %}
-                    <div class="card card-body row mb-2 hover-card bg-tr-250">
+                    <div class="card card-body row mb-2 hover-card bg-tr-250 gap-1">
                         <div class="row">{{detail.name}}</div>
                         <div class="row">
                             <div class="col">
@@ -62,7 +62,7 @@
                                 Precio total: € {{detail.total}} x {{data.total_days}} día/s
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row mt-2">
                             <div class="col">
                                 <a class="btn btn-outline-primary btn-sm" href="{% url 'booking' pk=detail.id%}?{{url_query}}">Elegir habitación</a>
                             </div>

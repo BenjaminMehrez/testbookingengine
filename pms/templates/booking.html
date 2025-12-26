@@ -1,23 +1,34 @@
 {% extends "main.html"%}
 
 {% block content %}
-<h1>Crear reserva</h1>
+<h1 class="py-5">Crear reserva</h1>
 <div>
     <h5>Reservando habitación {{room.room_type}} {{room.name}}</h5>
-    <div>Datos de contacto de la reserva:</div>
-    <div class="card card-body">
+    <div class="py-3">Datos de contacto de la reserva:</div>
+    <div class="p-4 border w-50">
         <form method="post" action="">
             {% csrf_token%}
             {% for field in customer_form %}
-            <div class="row">
-                <div class="col-md-2">{{field.label_tag}}</div>
-                <div class="col-md-auto">{{field}}</div>
+            <div class="row gap-3">
+                <div class="col">{{field.label_tag}}</div>
+                <div class="col mb-3">
+                    {{field}}
+                    {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in field.errors %}
+                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
             {{booking_form}}
             
-            <a class="btn btn-outline-primary" href="{% url 'search'%}?{{url_query}}">Atras</a>
-            <input class="btn btn-primary"type="submit" value="Confirmar reserva">
+            <div class="mt-4">
+                <a class="btn btn-outline-primary" href="{% url 'search'%}?{{url_query}}">Atras</a>
+                <input class="btn btn-primary"type="submit" value="Confirmar reserva">
+            </div>
         </form>
     </div>
 </div>

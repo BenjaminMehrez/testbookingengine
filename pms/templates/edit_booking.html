@@ -1,23 +1,28 @@
-{% extends "main.html"%}
-
-{% block content %}
-<h1>Editar datos de contacto</h1>
-<form action="" method="post">
-
-    {% csrf_token%}
-    {% for field in customer_form %}
-    <div class="row">
-        <div class="col-md-2">
-            {{field.label_tag}}
+{% extends "main.html"%} {% block content %}
+<h1 class="py-4">Editar datos de contacto</h1>
+<div class="p-4 border w-50">
+    <form action="" method="post">
+        {% csrf_token%} 
+        {% for field in customer_form %}
+        <div class="row gap-3">
+            <div class="col">{{field.label_tag}}</div>
+            <div class="col mb-3">
+                {{ field }} 
+                {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in field.errors %}
+                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
-        <div class="col">
-            {{field}}
+        {% endfor %}
+        <div class="mt-4">
+            <a class="btn btn-outline-primary" href="{% url 'home' %}">Volver</a>
+            <button class="btn btn-primary" type="submit">Guardar datos</button>
         </div>
-    </div>
-    {% endfor %}
-    <a class="btn btn-outline-primary" href="{% url 'home' %}">Volver</a>
-    <button class="btn btn-primary" type="submit">Guardar datos</button>
-</form>
-
+    </form>
+</div>
 
 {% endblock content%}

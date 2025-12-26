@@ -3,6 +3,10 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db import transaction, InterfaceError
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+
 
 from .form_dates import Ymd
 from .forms import *
@@ -97,20 +101,75 @@ class BookingView(View):
     def post(self, request, pk):
         # check if customer form is ok
         customer_form = CustomerForm(request.POST, prefix="customer")
+
+        try:
+            room = Room.objects.get(id=pk)
+        except Room.DoesNotExist: 
+            return redirect("/")
+
         if customer_form.is_valid():
-            # save customer data
-            customer = customer_form.save()
-            # add the customer id to the booking form
-            temp_POST = request.POST.copy()
-            temp_POST.update({
-                'booking-customer': customer.id,
-                'booking-room': pk,
-                'booking-code': generate.get()})
-            # if ok, save booking data
-            booking_form = BookingForm(temp_POST, prefix="booking")
-            if booking_form.is_valid():
-                booking_form.save()
-        return redirect('/')
+
+            try:
+                with transaction.atomic():
+                    # save customer data
+                    customer = customer_form.save()
+
+                    # add the customer id to the booking form
+                    temp_POST = request.POST.copy()
+                    temp_POST.update({
+                        'booking-customer': customer.id,
+                        'booking-room': pk,
+                        'booking-code': generate.get()})
+
+                    # if ok, save booking data
+                    booking_form = BookingForm(temp_POST, prefix="booking")
+
+                    if booking_form.is_valid():
+                        # Verification of the booking is correct
+                        # Get the room info with saved data
+                        checkin_date = booking_form.cleaned_data['checkin']
+                        checkout_date = booking_form.cleaned_data['checkout']
+
+                        # Looking for if existing bookings (overlap)
+                        is_taken = Booking.objects.select_for_update().filter(
+                            room_id=pk,
+                            state="NEW",
+                            checkin__lt=checkout_date,
+                            checkout__gt=checkin_date
+                        ).exists()
+
+                        if is_taken:
+                            # If it is taken, return an error and the atomic transaction is rolled back
+                            raise ValidationError(
+                                "¡Lo sentimos! La habitación acaba de ser reservada por otro usuario.")
+
+                        # If it is not taken, save the booking
+                        booking_form.save()
+
+                        messages.success(request, "¡Reserva creada con éxito!")
+                        return redirect("/")
+                        # Return to home page
+                    else:
+                        # Show error message
+                        messages.error(request, "Error en los datos de la reserva.")
+                    
+            except ValidationError as e:
+                # Show error message
+                messages.error(request, f"Error: {e.message if hasattr(e, 'message') else e}")
+                # Return to home page
+                return redirect('/')
+        else:
+            # Show error message
+            messages.error(request, "Por favor corrige los errores señalados.")
+            
+        booking_form_visual = BookingFormExcluded(request.POST, prefix="booking")
+
+        return render(request, "booking.html", {
+            "customer_form": customer_form, # Este trae los errores (rojo)
+            "booking_form": booking_form_visual, 
+            "room": room,
+            "url_query": request.GET.urlencode()
+        })
 
     def get(self, request, pk):
         # renders the form for booking confirmation.
@@ -156,10 +215,12 @@ class EditBookingView(View):
     def get(self, request, pk):
         booking = Booking.objects.get(id=pk)
         booking_form = BookingForm(prefix="booking", instance=booking)
-        customer_form = CustomerForm(prefix="customer", instance=booking.customer)
+        customer_form = CustomerForm(
+            prefix="customer", instance=booking.customer)
         context = {
             'booking_form': booking_form,
-            'customer_form': customer_form
+            'customer_form': customer_form,
+            'booking': booking
 
         }
         return render(request, "edit_booking.html", context)
@@ -168,21 +229,43 @@ class EditBookingView(View):
     @method_decorator(ensure_csrf_cookie)
     def post(self, request, pk):
         booking = Booking.objects.get(id=pk)
+
         customer_form = CustomerForm(request.POST, prefix="customer", instance=booking.customer)
         if customer_form.is_valid():
             customer_form.save()
             return redirect("/")
+        else:
+            messages.error(request, "No se pudo actualizar, Por favor corrige los errores señalados.")
 
+            booking_form = BookingForm(prefix='booking', instance=booking)
+            context = {
+                'booking_form': booking_form,
+                'customer_form': customer_form,
+                'booking': booking
+            }
+            return render(request, 'edit_booking.html', context)
 
 class DashboardView(View):
     def get(self, request):
         from datetime import date, time, datetime
-        today = date.today()
+
+        # Get date of url parameter, if is not exists, get today
+        date_param = request.GET.get('date')
+        if date_param:
+            try:
+                # Try to parse the date
+                target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                # If put invalid date, return today
+                target_date = date.today()
+        else:
+            target_date = date.today()
 
         # get bookings created today
-        today_min = datetime.combine(today, time.min)
-        today_max = datetime.combine(today, time.max)
+        today_min = datetime.combine(target_date, time.min)
+        today_max = datetime.combine(target_date, time.max)
         today_range = (today_min, today_max)
+
         new_bookings = (Booking.objects
                         .filter(created__range=today_range)
                         .values("id")
@@ -190,14 +273,14 @@ class DashboardView(View):
 
         # get incoming guests
         incoming = (Booking.objects
-                    .filter(checkin=today)
+                    .filter(checkin=target_date)
                     .exclude(state="DEL")
                     .values("id")
                     ).count()
 
         # get outcoming guests
         outcoming = (Booking.objects
-                     .filter(checkout=today)
+                     .filter(checkout=target_date)
                      .exclude(state="DEL")
                      .values("id")
                      ).count()
@@ -214,8 +297,8 @@ class DashboardView(View):
             'new_bookings': new_bookings,
             'incoming_guests': incoming,
             'outcoming_guests': outcoming,
-            'invoiced': invoiced
-
+            'invoiced': invoiced,
+            'current_date': target_date # Get date
         }
 
         context = {

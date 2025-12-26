@@ -14,14 +14,14 @@
 </head>
 <body>
     <div class="navbar-container">
-        <nav class="navbar navbar-expand-lg  navbar-dark bg-dark fixed-top">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <div class="container-fluid w-75">
                <a class="navbar-brand" href="{% url 'home'%}">CHAPP-Inn</a>
                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                <span class="navbar-toggler-icon"></span>
                </button>
                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
                      <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{% url 'home'%}" >Home</a>
                      </li>
@@ -43,10 +43,31 @@
             </div>
          </nav>
     </div>
-    <div class="container-xl">
+    <div class="position-relative container-xl mb-5">
+         {% if messages %}
+            {% for message in messages %}
+            <div class="position-absolute top-0 end-0 alert alert-{{ message.tags }} alert-dismissible fade show border" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+         {% endif %}
         {% block content%}
         
         {% endblock %}
     </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+         let alerts = document.querySelectorAll('.alert');
+         
+         alerts.forEach(function(alert) {
+               // 5000 ms
+               setTimeout(function() {
+                  let bsAlert = new bootstrap.Alert(alert);
+                  bsAlert.close();
+               }, 5000);
+         });
+      });
+   </script>
 </body>
 </html>

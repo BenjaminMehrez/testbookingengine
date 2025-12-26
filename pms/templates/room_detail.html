@@ -1,13 +1,13 @@
 {% extends "main.html"%}
 
 {% block content %}
-<h1>Detalles de la habitación</h1>
+<h1 class="py-5">Detalles de la habitación</h1>
 <div class="card">
-    <div class="card-header">
+    <div class="card-header h5 py-3">
         Habitación {{room.name}}
     </div>
     <div class="card-body">
-        <div class="row">
+        <div class="row border-top border-bottom py-3">
             <div class="col-md-2">
                 <span>Descripción: </span>
             </div>
@@ -15,7 +15,7 @@
                 <span>{{room.description}}</span>
             </div>
         </div>
-        <div class="row">
+        <div class="row border-top border-bottom py-3">
             <div class="col-md-2">
                 <span>Tipo de habitación:</span>
             </div>
@@ -23,7 +23,7 @@
                 <span>{{room.room_type}}</span>
             </div>
         </div>
-        <div class="row">
+        <div class="row border-top border-bottom py-3">
             <div class="col-md-2">
                 <span>Cant. huéspedes:</span>
             </div>
@@ -31,7 +31,7 @@
                 <span>{{room.room_type.max_guests}}</span>
             </div>
         </div>
-        <div class="row">
+        <div class="row border-top border-bottom py-3">
             <div class="col-md-2">
                 <span>Precio por día:</span>
             </div>
@@ -39,7 +39,7 @@
                 <span>€ {{room.room_type.price}}</span>
             </div>
         </div>    
-        <div class="row">
+        <div class="row mt-3">
             <div class="col">
                 <table class="table table-striped">
                     <thead>

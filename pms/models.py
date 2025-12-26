@@ -1,12 +1,21 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from django.utils import timezone
 
 # Create your models here.
+
+# Validator for phone
+phone_regex = RegexValidator(
+    regex=r'^\+?1?\d{9,15}$',
+    message="El número debe tener el formato: '+999999999'. Hasta 15 dígitos."
+)
 
 class Customer(models.Model):
     name = models.CharField(max_length=200)
     email = models.EmailField()
-    phone = models.CharField(max_length=50)  # TODO:ADD REGEX FOR PHONE VALIDATION
+    # Apply phone validator
+    phone = models.CharField(validators=[phone_regex], max_length=50)  # TODO:ADD REGEX FOR PHONE VALIDATION
 
     def __str__(self):
         return self.name
@@ -50,6 +59,20 @@ class Booking(models.Model):
     total = models.FloatField()
     code = models.CharField(max_length=8)
     created = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        # Validate dates
+        if self.checkin and self.checkout:
+            if self.checkin >= self.checkout:
+                raise ValidationError('La fecha de salida debe ser posterior a la de entrada.')
+        
+        # Validate that it is not in the past
+        if not self.pk and self.checkin and self.checkin < timezone.now().date():
+            raise ValidationError('No puedes reservar en el pasado.')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Validate before saving
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.code

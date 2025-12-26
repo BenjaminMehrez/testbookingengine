@@ -1,15 +1,15 @@
 {% extends "main.html"%}
 
 {% block content %}
-<h1>Editar datos de contacto</h1>
-<div>
-    ¿Desea borrar la reserva {{booking}} a nombre de {{booking.customer}}?
+<h1 class="py-5">Cancelar reserva</h1>
+<div class="h5">
+    ¿Desea cancelar la reserva {{booking}} a nombre de {{booking.customer}}?
 </div>
 <p></p>
-<form action="" method="post">
+<form action="" method="post" class="mt-5">
     {% csrf_token%}
     <a class="btn btn-outline-primary" href="{% url 'home' %}">Volver</a>
-    <button class="btn btn-danger" type="submit">Borrar</button>
+    <button class="btn btn-danger" type="submit">Cancelar</button>
 </form>
 
 
