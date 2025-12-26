@@ -44,5 +44,9 @@ document.querySelector("#id_checkin").addEventListener("change",(e)=>{
     }
     onDateUpdate()
     checkout.setAttribute("min",tomorrow)
-    checkout.focus()
+    // FIX: Only focus if the field exists
+    const guestInput = document.querySelector("#id_guests");
+    if (guestInput) {
+        guestInput.focus();
+    }
 })

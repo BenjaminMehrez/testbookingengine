@@ -62,23 +62,29 @@
                     <span>Total estadía: €{{booking.total}}</span>
                 </div>
             </div>
-            <div class="row">
-                <div class="col">
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                
+                <div class="btn-group gap-3" role="group">
+                    <a href="{% url 'edit_booking' pk=booking.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-person-lines-fill"></i> Actualizar Datos
+                    </a>
 
-                    <a href="{% url 'edit_booking' pk=booking.id%} " >Editar datos de contacto</a>
+                    <a href="{% url 'edit_booking_dates' pk=booking.id %}" class="btn btn-sm btn-outline-warning text-dark">
+                        <i class="bi bi-calendar-range"></i> Actualizar Fechas
+                    </a>
                 </div>
-                <div class="col">
 
-                </div>
-                <div class="col">
-
+                <div>
                     {% if booking.state != "DEL" %}
-                    <a href="{% url 'delete_booking' pk=booking.id%} " >Cancelar reserva</a>
+                        <a href="{% url 'delete_booking' pk=booking.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Cancelar
+                        </a>
+                    {% else %}
+                        <span class="badge bg-secondary">Cancelada</span>
                     {% endif %}
                 </div>
 
             </div>
-
         </div>
         {% endfor %}
     </div>

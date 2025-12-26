@@ -24,6 +24,21 @@ class RoomSearchForm(ModelForm):
         self.fields['checkin'].widget.attrs['min'] = datetime.today().strftime('%Y-%m-%d')
 
 
+class RoomEditDatesForm(ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['checkin', 'checkout']
+        widgets = {
+            'checkin': forms.DateInput(attrs={'type': 'date', 'class': 'form-control w-25'}),
+            'checkout': forms.DateInput(attrs={'type': 'date', 'class': 'form-control w-25'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default values for checkin and checkout
+        self.fields['checkin'].widget.attrs['min'] = datetime.today().strftime('%Y-%m-%d')
+
+
 class CustomerForm(ModelForm):
     class Meta:
         model = Customer

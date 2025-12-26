@@ -245,6 +245,61 @@ class EditBookingView(View):
             }
             return render(request, 'edit_booking.html', context)
 
+
+class EditBookingDatesView(View):
+    def get(self, request, pk):
+        booking = Booking.objects.get(id=pk)
+        
+        form = RoomEditDatesForm(instance=booking)
+        
+        context = {
+            'form': form,
+            'booking': booking
+        }
+        return render(request, "edit_booking_dates.html", context)
+    
+    @method_decorator(ensure_csrf_cookie)
+    def post(self, request, pk):
+        booking = Booking.objects.get(id=pk)
+
+        new_checkin = request.POST.get('checkin')
+        new_checkout = request.POST.get('checkout')
+
+        if not new_checkin or not new_checkout:
+            messages.error(request, "Debes introducir las fechas de entrada y salida.")
+            return redirect(f"/booking/{pk}/edit-dates")
+        try:
+            checkin_date = datetime.strptime(new_checkin, '%Y-%m-%d').date()
+            checkout_date = datetime.strptime(new_checkout, '%Y-%m-%d').date()
+        except ValueError:
+            messages.error(request, "Las fechas introducidas no son válidas.")
+            return redirect(f"/booking/{pk}/edit-dates")
+
+        if checkin_date >= checkout_date:
+            messages.error(request, "La fecha de salida debe ser posterior a la de entrada.")
+            return redirect(f"/booking/{pk}/edit-dates")
+        
+        is_taken = Booking.objects.filter(
+            room=booking.room,
+            state="NEW",
+            checkin__lt=checkout_date,
+            checkout__gt=checkin_date
+        ).exclude(id=pk).exists()
+
+        if is_taken:
+            messages.error(request, "¡Sin disponibilidad! La habitación está ocupada en esas fechas.")
+            return redirect(f"/booking/{pk}/edit-dates")
+            
+        booking.checkin = checkin_date
+        booking.checkout = checkout_date
+
+        days = (checkout_date - checkin_date).days
+        booking.total = days * booking.room.room_type.price
+        booking.save()
+
+        messages.success(request, "Reserva actualizada con éxito.")
+        return redirect("/")
+
 class DashboardView(View):
     def get(self, request):
         from datetime import date, time, datetime
