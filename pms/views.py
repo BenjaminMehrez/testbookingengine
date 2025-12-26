@@ -320,17 +320,23 @@ class RoomDetailsView(View):
 
 class RoomsView(View):
     def get(self, request):
+        # Retrieve search term from GET parameters (defaults to empty string)
         search_query = request.GET.get('search', '')
 
+        # Initialize the queryset with all rooms
         rooms_queryset = Room.objects.all()
 
+        # TASK 1: Apply filter if a search query exists
         if search_query:
+            # Filter rooms where the name contains the search query (case-insensitive)
             rooms_queryset = rooms_queryset.filter(name__icontains=search_query)
 
+        # Optimization: Return only necessary fields as a dictionary list
+        # Note: This avoids N+1 queries by fetching room_type__name directly
         rooms = rooms_queryset.values("name", "room_type__name", "id")
         
         context = {
             'rooms': rooms,
-            'search_query': search_query
+            'search_query': search_query # Return query to keep the input filled in UI
         }
         return render(request, "rooms.html", context)
